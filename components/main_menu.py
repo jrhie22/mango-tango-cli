@@ -14,12 +14,20 @@ def main_menu(context: ViewContext):
     terminal = context.terminal
     while True:
         exit_instruction = "⟪ Hit Ctrl+C at any time to exit a menu ⟫"
-        with terminal.nest(draw_box("CIB Mango Tree") + "\n" + exit_instruction + "\n"):
+        welcome_message = "Import your datasets to run analysis for likelihood of coordinated inauthentic behavior."
+        with terminal.nest(
+            draw_box("CIB Mango Tree")
+            + "\n"
+            + exit_instruction
+            + "\n\n"
+            + welcome_message
+            + "\n"
+        ):
             action = prompts.list_input(
                 "What would you like to do?",
                 choices=[
-                    ("Import dataset", "new_project"),
-                    ("Load existing dataset", "load_project"),
+                    ("Import dataset for new project", "new_project"),
+                    ("Review existing project", "load_project"),
                     ("Exit", "exit"),
                 ],
             )
