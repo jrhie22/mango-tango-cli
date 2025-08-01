@@ -1,11 +1,15 @@
 from abc import ABC, abstractmethod
-from typing import TypeVar
+from typing import Any, Callable, Optional, TypeVar, Union
 
 import polars as pl
 from dash import Dash
+from polars import DataFrame
 from pydantic import BaseModel
+from shiny import Inputs, Outputs, Session
+from shiny.ui._navs import NavPanel
 
 from .interface import SecondaryAnalyzerInterface
+from .params import ParamValue
 
 
 class PrimaryAnalyzerContext(ABC, BaseModel):
@@ -22,6 +26,14 @@ class PrimaryAnalyzerContext(ABC, BaseModel):
 
         **Note that this is in function form** even though one input is expected,
         in anticipation that we may want to support multiple inputs in the future.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def params(self) -> dict[str, ParamValue]:
+        """
+        Gets the analysis parameters.
         """
         pass
 
@@ -43,6 +55,14 @@ class BaseDerivedModuleContext(ABC, BaseModel):
   Gets the temporary directory that the module can freely write content to
   during its lifetime. This directory will not persist between runs.
   """
+
+    @property
+    @abstractmethod
+    def base_params(self) -> dict[str, ParamValue]:
+        """
+        Gets the primary analysis parameters.
+        """
+        pass
 
     @property
     @abstractmethod
@@ -138,3 +158,25 @@ class TableWriter(ABC):
         file to it.
         """
         pass
+
+
+ServerCallback = Union[
+    Callable[[Inputs], None], Callable[[Inputs, Outputs, Session], None]
+]
+
+
+class ShinyContext(BaseModel):
+    panel: NavPanel = None
+    server_handler: Optional[ServerCallback] = None
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class FactoryOutputContext(BaseModel):
+    shiny: Optional[ShinyContext] = None
+    api: Optional[dict[str, Any]] = None
+    data_frames: Optional[dict[str, DataFrame]] = None
+
+    class Config:
+        arbitrary_types_allowed = True
